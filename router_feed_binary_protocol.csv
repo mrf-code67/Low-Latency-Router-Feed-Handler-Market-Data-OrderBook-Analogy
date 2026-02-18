@@ -1,0 +1,65 @@
+ROUTER FEED INFORMATION  (Router --> Server),,,,
+Offset,Size bytes,Type,Value,Description
+0,1,,0x02,Start of Text (STX)
+1,2,U-Integer,>=65532,"Total length of this whole payload, excluding STX, ETX. Max value is USHRT_MAX-3"
+3,4,U-Integer,,Sequence #
+7,4,U-Integer,,Time-stamp (absolute)
+37,30,,,System Information
+38,1,U-Integer,,"Count of STA (connected clients), max 8,demo purpose"
+39,18,,,STA Information
+Variable number of STA,,,,
+,1,,0x03,End of Data
+,,,,
+,SYSTEM INFORMATION:,,,
+,Size ,Type,Value,Description
+,6,U-Integer,,MAC address of router
+,4,,,IP of router
+,4,,,"Total usable main memory size, JB"
+,4,,,"Available memory size, in KB"
+,2,,,"Cpu usage, multiple of 100"
+,2,,,"1 minute load average, multiple of 100"
+,2,,,"5 minute load averages, multiple of 100"
+,2,,,"15 minute load averages, multiple of 100"
+,4,,,Uptime in seconds
+,30,,,TOTAL
+,,,,
+,"STA INFORMATION (Connected client devices, simulated by random values)",,,
+,Size,Type,Value,Description
+,6,U-Integer,,MAC address of STA
+,4,,,Association Time
+,4,,,RX data transfer in KB
+,4,,,TX data transfer in KB
+,18,,,TOTAL
+,,,,
+,,,,
+ROUTER GAP RECOVERY MESSAGE  (Server --> Router),,,,
+Offset,Size bytes,Type,Value,Description
+0,1,,0x02,Start of Text (STX)
+1,1,,0x4D," M in alpha, "
+2,4,U-Integer,,Last Received Sequence # by server
+6,1,,0x03,End of Data
+7,,,,TOTAL
+,,,,
+ROUTER REBOOT MESSAGE  (Server --> Router),,,,
+Offset,Size bytes,Type,Value,Description
+0,1,,0x02,Start of Text (STX)
+1,1,,0x52," R in alpha, "
+2,4,U-Integer,,Delay seconds to reboot
+6,1,,0x03,End of Data
+7,,,,TOTAL
+,,,,
+ROUTER STOP  SEND MESSAGE  (Server --> Router),,,,
+Offset,Size bytes,Type,Value,Description
+0,1,,0x02,Start of Text (STX)
+1,1,,0x53," S in alpha, "
+2,4,U-Integer,,How many seconds to stop sending
+6,1,,0x03,End of Data
+7,,,,TOTAL
+,,,,
+ROUTER RESTART  SEND MESSAGE  (Server --> Router),,,,
+Offset,Size bytes,Type,Value,Description
+0,1,,0x02,Start of Text (STX)
+1,1,,0x42," B in alpha, "
+2,4,U-Integer,,Reserved
+6,1,,0x03,End of Data
+7,,,,TOTAL
