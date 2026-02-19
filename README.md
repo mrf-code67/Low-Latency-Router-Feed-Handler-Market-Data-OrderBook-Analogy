@@ -92,46 +92,50 @@ High-level mapping:
 
 #### Repository Layout (Key Files)
 ##### Protocol & data model
-include/protocol.hpp — binary protocol parsing/building
-include/router_book.hpp, src/router_book.cpp — per-router state & gap sequence + high cpu detection 
+- include/protocol.hpp — binary protocol parsing/building
+- include/router_book.hpp, src/router_book.cpp — per-router state & gap sequence + high cpu detection 
 ##### Hot-path data movement
-include/spsc_ring.hpp — lock-free SPSC ring
-include/packet_slab_pool.hpp — reusable packet buffers (slab pool)
-include/raw_items.hpp — metadata pushed through SPSC ring (no payload copy)
+- include/spsc_ring.hpp — lock-free SPSC ring
+- include/packet_slab_pool.hpp — reusable packet buffers (slab pool)
+- include/raw_items.hpp — metadata pushed through SPSC ring (no payload copy)
 ##### Memory management
-include/fixed_block_pool.hpp — FixedBlockPool + PoolAllocator (fallback to default allocator + nested propagation)
-include/huge_page_region.hpp, src/huge_page_region.cpp — huge-page backed region, memorylock
+- include/fixed_block_pool.hpp — FixedBlockPool + PoolAllocator (fallback to default allocator + nested propagation)
+- include/huge_page_region.hpp, src/huge_page_region.cpp — huge-page backed region, memorylock
 ##### Networking
-include/net/udp_server.hpp, src/net/udp_server.cpp
-include/net/tcp_server.hpp, src/net/tcp_server.cpp
-include/net/tcp_client.hpp, src/net/tcp_client.cpp
+- include/net/udp_server.hpp, src/net/udp_server.cpp
+- include/net/tcp_server.hpp, src/net/tcp_server.cpp
+- include/net/tcp_client.hpp, src/net/tcp_client.cpp
 ##### Threads
-include/threads/io_thread.hpp, src/threads/io_thread.cpp — epoll ET, UDP recv, TCP accept
-include/threads/parser_thread.hpp, src/threads/parser_thread.cpp — parse + update + emit control events
-include/threads/gap_thread.hpp, src/threads/gap_thread.cpp — TCP control sender
-include/threads/thread_util.hpp, src/threads/thread_util.cpp — pinning + RT scheduling helpers
+- include/threads/io_thread.hpp, src/threads/io_thread.cpp — epoll ET, UDP recv, TCP accept
+- include/threads/parser_thread.hpp, src/threads/parser_thread.cpp — parse + update + emit control events
+- include/threads/gap_thread.hpp, src/threads/gap_thread.cpp — TCP control sender
+- include/threads/thread_util.hpp, src/threads/thread_util.cpp — pinning + RT scheduling helpers
 ##### Config
-include/config_loader.hpp, src/config_loader.cpp — CSV config loader
-tools/server_config.csv — example config
+- include/config_loader.hpp, src/config_loader.cpp — CSV config loader
+- tools/server_config.csv — example config
 
 ##### High Level Design Diagram
 Routers  --------------------->  [ IO Thread ] 
-       UDP Feed Binary + 
-      (if any) GAP Recovery + control msg Binary 
-      accepts inbound ctrl conns, EPoll ET    
-  [ IO Thread ] ---->  [ Parser Thread ]
-   SPSC raw_ring (byte metadata) + slab pool
-    [ Parser Thread ]  
-    - read + parse bytes
-    - update RouterBook
-    - detect seq gaps
-    - detect very high cpu
-    - emit CtrlEvent (SPSC)
-   [ Parser Thread ] -------->  [ Control Thread ]
-     SPSC raw_ring (byte metadata) + slab pool
-   [ Control Thread ]
-        Populates Gap Recovery Request + Reboot 
-        + Start + Stop Binary Messages  
-        - reuse accepted conn if present
-        - else connect-send-close 
-    [ Control Thread ]  -------------> Router via TCP
+- UDP Feed Binary
+- And (if any) GAP Recovery + control msg Binary 
+- accepts inbound ctrl conns, EPoll ET
+      
+[ IO Thread ] ---->  [ Parser Thread ]
+ SPSC raw_ring (byte metadata) + slab pool
+   
+[ Parser Thread ]
+- read + parse bytes
+- update RouterBook
+- detect seq gaps
+- detect very high cpu
+- emit CtrlEvent (SPSC)
+
+[ Parser Thread ] -------->  [ Control Thread ]
+- SPSC raw_ring (byte metadata) + slab pool
+
+[ Control Thread ]
+- Populates Gap Recovery Request + Reboot + Start + Stop Binary Messages
+- reuse accepted conn if present
+- else connect-send-close 
+
+[ Control Thread ]  -------------> Router via TCP
